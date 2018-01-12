@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<head>
+  <link href="custom.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+
+<!-- load the d3.js library -->
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+
+<h1>Timeline</h1>
+
+<div id="timeline">
+</div>
+
+<div id="changeview">
+</div>
+
+<h2>Actions</h2>
+<div id="actionList">
+</div>
+
+<script>
+
+var actions = [];
+var actionCounts = [];
+congress = 113;
+billtype = "hr";
+billnum = "83";
+//congress = 114;
+//billtype = "s";
+//billnum = "2893";
+
+if (congress == 114) {
+  congressDates == [new Date(Date.parse('2015-01-03')), new Date(Date.parse('2017-01-03'))];
+} else if (congress == 113) {
+  congressDates = [new Date(Date.parse('2013-01-03')), new Date(Date.parse('2015-01-03'))];
+} else if (congress == 115) {
+  congressDates = [new Date(Date.parse('2017-01-03')), new Date(Date.parse('2019-01-03'))];
+}
+//Fetch our baseline counts from the webservice
+$.get( "https://awake-physician.glitch.me/fetch?congress=" + congress + "&billtype=" + billtype + "&billnum=" + billnum, function( data ) {
+  //console.log(data);
+  var actionJSON = data.billStatus.bill.actions.item;
+  var parseType = "meh";
+  actionParse(parseType, actionJSON);
+}).fail(function() {
+  alert( "There was some sort of problem -- please reload the page" );
+});
+
+function actionParse(parseType, actionJSON) {
+ for (i = 0; i < actionJSON.length; i++) {
+       var actionDate = actionJSON[i].actionDate._text;
+       var actionName = actionJSON[i].text._text;
+       var actionSource = actionJSON[i].sourceSystem.name._text;
+       var myAction = {
+         date: actionDate,
+         name: actionName,
+         source: actionSource
+       }
+       actions.push(myAction);
+    }
+    drawTimeline("simple");
+  }
+
+// set the dimensions and margins of the graph and gove the transforms something to chew on
+var margin = {top: 20, right: 20, bottom: 20, left: 20},
+    width = 900 - margin.left - margin.right;
+    height = 75 - margin.top - margin.bottom;
+
+function drawTimeline(timelineType) {
+
+var firstDate = new Date(d3.min(actions, function(d) { return d.date; }));
+var lastDate = new Date(d3.max(actions, function(d) { return d.date; }));
+//var firstDetailDate = firstDate.setMonth(firstDate.getMonth() - 1);
+//var lastDetailDate = lastDate.setMonth(lastDate.getMonth() + 1);
+
+// appends a 'group' element to 'svg' + moves it to the top left margin
+var svg = d3.select("#timeline").append("svg")
+  .attr("id", timelineType)
+  .attr("width", width + margin.left + margin.right)
+  .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+  .attr("transform",
+      "translate(" + margin.left + "," + margin.top + ")");
+
+// set the ranges
+if (timelineType == "simple") {
+  var timelineDomain = congressDates;
+} else {
+  var timelineDomain = [firstDate, lastDate];
+}
+var x = d3.scaleTime()
+    .domain(timelineDomain)
+    .range([0, width]);
+
+var y = d3.scaleLinear().range([height, 0]);
+
+// Add the X Axis
+svg.append("g")
+    .attr("transform", "translate(0," + height + ")")
+    .call(d3.axisBottom(x).ticks(10));
+
+svg.selectAll("dot")
+    .data(actions)
+    .enter().append("circle")
+    .attr("r", function(d) {
+      var actCount = countActions(d.date,d.source);
+      if (actCount == 1) { return 5; }
+      if (actCount > 1 && actCount <= 3) { return 7; }
+      if (actCount > 3) { return 10; }
+      })
+    .attr("cy", function(d) {
+      if ( d.source == "Senate") { return 1;
+        } else { return 20; }
+      })
+    .attr("cx", function(d) { return x(Date.parse(d.date)); })
+    .attr("class", function(d) {
+      if ( d.source == "Senate") { return "senateaction";
+        } else if (d.source == "House floor actions" || d.source == "House committee actions") {
+          return "houseaction";
+      } else { return "LoCaction"; }
+      })
+      .on("mouseover", function(d) {
+        listActions(d.date,d.source);
+      })
+      .on("mouseout", function(){ $("#actionList").empty(); });
+if (timelineType == "simple") {
+  $("#changeview").append('<a href="#!" id="makedetailed">Show detailed timeline</a>');
+} else {
+  $("#changeview").append('<a href="#!" id="makesimple">Show summary timeline</a>');
+}
+
+}
+
+function countActions(date, source) {
+  var actionCount = 0;
+  for (i = 0; i < actions.length; i++) {
+    if (actions[i].date == date && actions[i].source == source) {
+      actionCount ++;
+    }
+  }
+  return actionCount;
+}
+
+function listActions(date, source) {
+  var actionList = [];
+  for (i = 0; i < actions.length; i++) {
+    if (actions[i].date == date && actions[i].source == source) {
+      actionList.push(actions[i]);
+    }
+  }
+  $("#actionList").append("<h3>" + actionList[0].date + "</h3>");
+  if (actionList[0].source == "Library of Congress") {
+    $("#actionList h3").append(" - Summary Actions");
+  } else if (actionList[0].source == "Senate") {
+    $("#actionList h3").append(" - Senate Actions");
+  } else if (actionList[0].source == "House floor actions" || actionList[0].source == "House committee actions") {
+    $("#actionList h3").append(" - House Actions");
+    $("#actionList").append("<ul>");
+  }
+  for (var i = 0; i < actionList.length; i++) {
+    $("#actionList").append("<li>" + actionList[i].name + "</li>");
+  }
+}
+
+$( "#changeview" ).on( "click", "#makedetailed", function() {
+    $("#changeview").empty();
+    $("#timeline").empty();
+    drawTimeline("detailed");
+    });
+
+$( "#changeview" ).on( "click", "#makesimple", function() {
+    $("#changeview").empty();
+    $("#timeline").empty();
+    drawTimeline("simple");
+    });
+
+</script>
+</body>
