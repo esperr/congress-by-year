@@ -19,13 +19,19 @@ tree = etree.parse(path + "\\" + listing[0])
 root = tree.getroot()
 congress = root.find('.//bill/congress').text
 billType = root.find('.//bill/billType').text
+if billType[0] == "h" or billType[0] == "H":
+    chamber = "house"
+if billType[0] == "s" or billType[0] == "S":
+    chamber = "senate"
 print congress
 print billType
+print chamber
 passedHouseCount = 0
+passedSenateCount = 0
 
 
 for infile in listing:
-  #print "current file is:" + infile
+  print "current file is:" + infile
   filepath = path + "\\" + infile
   tree = etree.parse(filepath)
   root = tree.getroot()
@@ -42,60 +48,72 @@ for infile in listing:
   passedHouse = root.find('.//actionTypeCounts/passedAgreedToInHouse')
   if passedHouse is not None:
       passedHouseCount += 1
+  passedSenate = root.find('.//actionTypeCounts/passedAgreedToInSenate')
+  if passedSenate is not None:
+      passedSenateCount += 1
+
 
   for item in allcommittees:
     name = item.find('name').text
+    mykey = ""
     allactivities = item.findall('./activities/item')
     for actitem in allactivities:
         action = actitem.find('name').text
         if action == "Referred to":
-            mykey = "Introduced in House|" + name
+            if chamber == "house":
+                mykey = "Introduced in House|" + name
+            if chamber == "senate":
+                mykey = "Introduced in Senate|" + name
         elif action == "Reported by":
             mykey = name + "|Reported to Floor"
-        if mykey in allDict:
-            allDict[mykey] += 1
+        if mykey == "":
+            break
         else:
-            allDict[mykey] = 1
+            if mykey in allDict:
+                allDict[mykey] += 1
+            else:
+                allDict[mykey] = 1
+
         for subject in subdicts:
             if subject not in subjectDicts:
                 subjectDicts[subject] = {}
-                subjectDicts[subject]['Reported to Floor|Passed House'] = 0
+                if chamber == "house":
+                    subjectDicts[subject]['Reported to Floor|Passed House'] = 0
+                if chamber == "senate":
+                    subjectDicts[subject]['Reported to Floor|Passed Senate'] = 0
             if mykey not in subjectDicts[subject]:
                 subjectDicts[subject][mykey] = 1
             else:
                 subjectDicts[subject][mykey] += 1
-            if passedHouse is not None:
+            if chamber == "house" and passedHouse is not None:
                 subjectDicts[subject]['Reported to Floor|Passed House'] += 1
-            #else:
-            #    subjectDicts[subject] = {}
+            if chamber == "senate" and passedSenate is not None:
+                subjectDicts[subject]['Reported to Floor|Passed Senate'] += 1
+
         if policyarea is not None:
             if policyarea not in policyDicts:
                 policyDicts[policyarea] = {}
-                policyDicts[policyarea]['Reported to Floor|Passed House'] = 0
+                if chamber == "house":
+                    policyDicts[policyarea]['Reported to Floor|Passed House'] = 0
+                if chamber == "senate":
+                    policyDicts[policyarea]['Reported to Floor|Passed Senate'] = 0
             if mykey not in policyDicts[policyarea]:
                 policyDicts[policyarea][mykey] = 1
             else:
                 policyDicts[policyarea][mykey] += 1
-            if passedHouse is not None:
+            if chamber == "house" and passedHouse is not None:
                 policyDicts[policyarea]['Reported to Floor|Passed House'] += 1
+            if chamber == "senate" and passedSenate is not None:
+                policyDicts[policyarea]['Reported to Floor|Passed Senate'] += 1
 
-
+if chamber == "house":
+    allDict['Reported to Floor|Passed House'] = passedHouseCount
+if chamber == "senate":
+    allDict['Reported to Floor|Passed Senate'] = passedSenateCount
 
 print allDict
 subjectDicts['All_subjects'] = allDict
 policyDicts['All_areas'] = allDict
-
-#filename = "sankeytotals_" + str(congress) + "_" + billType + ".js"
-#f = open(filename, 'w')
-#f.write('var allbills = [')
-
-#for key, value in allDict.iteritems():
-#    myparts = key.split("|")
-#    dictLine = '[ "' + myparts[0] + '", "'  + myparts[1] + '", ' + str(value) + ' ],'
-#    f.write(dictLine + '\n')
-#f.write('[ "Reported to Floor", "Passed House",' + str(passedHouseCount) + ']')
-#f.write(']')
-#f.close()
 
 with open("sankeysubjects_" + str(congress) + "_" + billType + ".js", 'w') as outfile:
     json.dump(subjectDicts, outfile)
