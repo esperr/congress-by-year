@@ -1,0 +1,182 @@
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+  <title>Congress by Year</title>
+  <link href="congressbyyear.css" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <style type="text/css">
+  @font-face {
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 400;
+    src: url(https://fonts.gstatic.com/s/roboto/v15/Fcx7Wwv8OzT71A3E1XOAjvesZW2xOQ-xsNqO47m55DA.woff2) format('woff2');
+  }
+  </style>
+  <script>
+    //Google analytics script goes here!
+  </script>
+</head>
+
+<!--
+Designed and built by Ed Sperr (esperr@uga.edu or ed_sperr@hotmail.com)
+-->
+<body>
+<script>
+// Detecting old IE
+var ua = window.navigator.userAgent;
+var msie = ua.indexOf("MSIE ");
+if (msie > 0) {
+    var ieVer = parseInt(ua.substring(msie + 5, ua.indexOf(".", msie)));
+    if (ieVer < 9) {
+      alert("Sorry! Congress by Year does not work with IE8 or below....");
+    }
+}
+</script>
+<script type="text/javascript" src="https://canvg.github.io/canvg/rgbcolor.js"></script>
+<script type="text/javascript" src="https://canvg.github.io/canvg/StackBlur.js"></script>
+<script type="text/javascript" src="https://canvg.github.io/canvg/canvg.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+<div class="container">
+
+<div id="topbanner" class="jumbotron">
+  <h1>Congress by Year</h1>
+  <a id="about" class="label label-default" href="about.html">About Congress by Year</a>
+</div>
+
+<div class="row">
+
+
+
+<div class="col-sm-12 col-md-8 col-lg-9">
+<div id="search" class="input-group input-group-lg">
+  <input type="text" id="pmsearch" class="form-control">
+  <span class="input-group-btn">
+    <button id="runsearch" class="btn btn-primary" type="button">Search</button>
+  </span>
+</div>
+</div>
+
+<div class="col-sm-12 col-md-4 col-lg-3">
+  <div class="panel panel-default">
+    <div class="panel-heading">Options</div>
+    <div class="panel-body">
+      <strong>Document Type</strong>
+      <select id="type">
+          <option value="BILLS">Bills</option>
+          <option value="PLAW">Laws</option>
+          <option value="CREC">Congressional Record</option>
+          <option value="CRECB">Congressional Record (Bound)</option>
+        </select>
+      <strong>Year Range</strong>
+      <div id="pickyears"></div>
+    </div>
+  </div>
+</div>
+
+</div><!--row-->
+
+<!--
+<div id="printable">
+  <div id="printable-stuff">
+  <span class="close">×</span>
+  </div>
+</div>
+-->
+<div class="row">
+<div id="left" class="col-sm-12 col-md-12 col-lg-12">
+<div id="results">
+<div id="splash" class="panel panel-default splash">
+  <div class="panel-body">
+
+    <p>PubMed by Year shows your search proportionally, comparing the results for each year to the database as whole.</p>
+    <p>Enter any <a href="https://www.ncbi.nlm.nih.gov/pubmed/">PubMed</a> search above to see how your results change over time.
+    You can use one word (e.g. <a class="example" data-srchstr="q1=heart">heart</a>, <a class="example" data-srchstr="q1=diabetes">diabetes</a>) or
+    several (<a class="example" data-srchstr="q1=breast cancer">breast cancer</a>, <a class="example" data-srchstr="q1=myocardial infarction">myocardial infarction</a>).
+    You can even use more advanced techniques such as field tags (<a class="example" data-srchstr="Leukemia[Mesh]">Leukemia[Mesh]</a>, <a class="example" data-srchstr="q1=pubmednotmedline [sb]">pubmednotmedline [sb]</a>) or
+    boolean operators (<a class="example" data-srchstr="q1=smoking AND lung cancer ">smoking AND lung cancer</a>, <a class="example" data-srchstr="q1=polio AND (vaccine OR vaccination)">polio AND (vaccine OR vaccination)</a>).
+    Finally, by entering multiple searches one at a time, you can easily <a class="example" data-srchstr="q1=dengue&q2=chikungunya&q3=zika">compare</a> them.
+    Once you're finished, you can easily share your results with others or save your graphs for later.
+
+      <em><a href="about.html">(more)</a></em></p>
+    </div>
+</div>
+</div>
+</div>
+
+</div><!--row-->
+
+
+<!--
+<div class="col-sm-12 col-md-2 col-lg-3">
+
+<div id="past" class="panel panel-default hideme">
+  <div class="panel-heading">
+    <h3 class="panel-title">Past searches</h3>
+  </div>
+  <div class="panel-body">
+  </div>
+</div>
+-->
+
+<div id="sharing-link" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Share this search</h4>
+      </div>
+      <div class="modal-body">
+        <input type="text" id="sharingUrlcontent">
+      </div>
+      <div class="modal-footer">
+        <p>Copy the link above</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="printchart" class="modal modal-wide fade" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Printable Chart</h4>
+      </div>
+      <div class="modal-body">
+        <canvas id="canvas"></canvas>
+      </div>
+      <div class="modal-footer">
+        <p>Right click on image to save</p>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" id="changesize" class="btn btn-primary">View Larger Size</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p style='clear: both; margin-bottom: 60px;'></p>
+<br />
+
+</div>
+
+<!--
+</div>
+</div>
+-->
+
+<footer class="footer">
+  <div class="container">
+    <span class="text-muted">  <p>Design and contruction by Ed Sperr, M.L.I.S. (<a href="mailto:ed_sperr@hotmail.com">ed_sperr@hotmail.com</a>)   |
+      Data from <a href="http://www.ncbi.nlm.nih.gov/">NCBI</a>  |   Charting tools from  <a href="https://developers.google.com/chart/interactive/docs/gallery/linechart" target="_blank">Google</a>
+     | See the code at <a href="https://github.com/esperr/pubmed-by-year">GitHub</a></p></span>
+  </div>
+</footer>
+
+
+<script src="yearframework.js"></script>
+
+</body>
+</html>
