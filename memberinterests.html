@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+ <head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+ </head>
+ <body>
+   <script src="policyareasbymember_113_HR.js"></script>
+   <script src="members_113_HR.js"></script>
+
+   <h1>Hello World!</h1>
+   <select id="subjectlisting">
+      </select>
+  <br />
+  <br />
+  <select id="memberlisting">
+     </select>
+
+
+   <script>
+
+   getMembers();
+   function getMembers() {
+     var auxArr = [];
+     $.each(members, function(key, value)
+       {
+         if (members[key]['district']) {
+           memberOption = "<option value='" + key + "'>" + members[key]['fullname'] + "</option>";
+           auxArr.push(memberOption);
+         }
+       });
+     $('#memberlisting').append(auxArr.join(''));
+
+   }
+   console.log(members);
+
+   var subjects = [];
+   //console.log(allpolicies);
+   for (subject in allsubjects) {
+     subjects.push(subject);
+     subjects.sort();
+   }
+   var auxArr = [];
+   $.each(subjects, function(i, subject)
+     {
+       auxArr[i] = "<option value='" + subject + "'>" + subject + "</option>";
+     });
+   $('#subjectlisting').append(auxArr.join(''));
+
+   $( "#subjectlisting" ).change(function() {
+     subject = $( "#subjectlisting option:selected" ).val();
+     memberrank(subject);
+   });
+
+   $( "#memberlisting" ).change(function() {
+     member = $( "#memberlisting option:selected" ).val();
+     topsubjects(member);
+   });
+
+   function memberrank(subject) {
+     var ranklist = [];
+     $.each( allsubjects[subject], function( key, value ) {
+       //var member = key;
+       var sponsored = value['sponsored'] || 0;
+       var cosponsored = value['cosponsored'] || 0;
+       var score = (sponsored*3) + cosponsored;
+       var memberobj = { "member": key, "score": score };
+       ranklist.push(memberobj);
+       });
+       var ranked = keysrt(ranklist, 'score', 'reverse');
+       console.log(JSON.stringify(ranked));
+   }
+
+   function topsubjects(member) {
+     var interests = [];
+     $.each( allsubjects, function( key, value ) {
+       var scanSubject = allsubjects[key];
+       if (scanSubject[member]) {
+         var sponsored = scanSubject[member]['sponsored'] || 0;
+         var cosponsored = scanSubject[member]['cosponsored'] || 0;
+         var bills = sponsored + cosponsored;
+         var proportion = bills / scanSubject['total'];
+         var subjectObj = { "member": member, "subject": key, "proportion": proportion };
+         interests.push(subjectObj);
+       }
+     });
+     var ranked = keysrt(interests, 'proportion', 'reverse');
+     console.log(ranked);
+   }
+   function keysrt(arr, key, reverse) {
+       var sortOrder = 1;
+       if(reverse){
+           sortOrder = -1;
+       }
+       return arr.sort(function(a, b) {
+           var x = a[key],
+               y = b[key];
+
+           return sortOrder * ((x < y) ? -1 : ((x > y) ? 1 : 0));
+       });
+   }
+   </script>
+
+ </body>
+</html>
