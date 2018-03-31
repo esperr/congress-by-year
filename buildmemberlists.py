@@ -8,7 +8,7 @@ parser.add_argument("filespath", help="Path to downloaded files")
 args = parser.parse_args()
 print args.filespath
 
-members = {}
+members = []
 
 #path = 'C:\Users\hksr4262\Documents\hr_statuses'
 path = args.filespath
@@ -25,42 +25,39 @@ print congress
 print billType
 print chamber
 
+def makememberlist( membernodes ):
+  for item in allsponsors:
+      member = {}
+      bioidnode = item.find('bioguideId')
+      if bioidnode is not None:
+        id = bioidnode.text
+        if any(member['bioid'] == id for member in members):
+            break
+        else:
+            member['bioid'] = bioidnode.text
+            member['fullname'] = item.find('fullName').text
+            member['lastname'] = item.find('lastName').text
+            member['party'] = item.find('party').text
+            member['state'] = item.find('state').text
+            if item.find('district') is not None:
+                member['district'] = item.find('district').text
+            members.append(member)
 
 for infile in listing:
-  print "current file is:" + infile
+  #print "current file is:" + infile
   filepath = path + "\\" + infile
   tree = etree.parse(filepath)
   root = tree.getroot()
-  #allcommittees = root.findall('.//committees/billCommittees/item')
   allsponsors = root.findall('.//sponsors/item')
+  makememberlist( allsponsors )
+
   allcosponsors = root.findall('.//cosponsors/item')
-  for item in allsponsors:
-      bioidnode = item.find('bioguideId')
-      if bioidnode is not None:
-          bioid = bioidnode.text
-          if bioid not in members:
-              members[bioid] = {}
-              members[bioid]['fullname'] = item.find('fullName').text
-              members[bioid]['lastname'] = item.find('lastName').text
-              members[bioid]['state'] = item.find('state').text
-              members[bioid]['party'] = item.find('party').text
-              districtnode = item.find('district')
-              if districtnode is not None:
-                  members[bioid]['district'] = districtnode.text
+  makememberlist( allcosponsors )
 
-for item in allcosponsors:
-     bioidnode = item.find('bioguideId')
-     if bioidnode is not None:
-         bioid = bioidnode.text
-         if bioid not in members:
-             members[bioid] = {}
-             members[bioid]['fullname'] = item.find('fullName').text
-             members[bioid]['lastname'] = item.find('lastName').text
-             members[bioid]['state'] = item.find('state').text
-             members[bioid]['party'] = item.find('party').text
-             districtnode = item.find('district')
-             if districtnode is not None:
-                 members[bioid]['district'] = districtnode.text
-
+print members
+#json.dumps(members)
 with open("members_" + str(congress) + "_" + billType + ".js", 'w') as outfile:
     json.dump(members, outfile)
+#f = open("members_" + str(congress) + "_" + billType + ".js", 'w')
+#f.write(members)
+#f.close()
