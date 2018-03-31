@@ -1,52 +1,125 @@
-<!DOCTYPE html>
-<html lang="en">
- <head>
+<html>
+<head>
   <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
- </head>
- <body>
-   <script src="policyareasbymember_113_HR.js"></script>
-   <script src="members_113_HR.js"></script>
+  <title>Find a Member by Interest</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <style type="text/css">
+  @font-face {
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 400;
+    src: url(https://fonts.gstatic.com/s/roboto/v15/Fcx7Wwv8OzT71A3E1XOAjvesZW2xOQ-xsNqO47m55DA.woff2) format('woff2');
+  }
+  </style>
+  <script>
+    //Google analytics script goes here!
+  </script>
+</head>
 
-   <h1>Hello World!</h1>
-   <select id="subjectlisting">
-      </select>
-  <br />
-  <br />
+<!--
+Designed and built by Ed Sperr (esperr@uga.edu or ed_sperr@hotmail.com)
+-->
+<body>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+  <div class="container">
+
+  <div id="topbanner" class="jumbotron">
+    <h1>Members by Interest</h1>
+    <a id="about" class="label label-default" href="about.html">About Members by Interest</a>
+  </div>
+  <div class="row">
+
+  <h1>Search interests by:</h1>
+  <div id="togglesearch" class="btn-group btn-group-toggle" data-toggle="buttons">
+    <label class="btn btn-primary active">
+      <input type="radio" name="searchtype" value="subjecttoggle" autocomplete="off" checked> Subject or Policy Area
+    </label>
+    <label class="btn btn-primary">
+      <input type="radio" name="searchtype" value="membertoggle" autocomplete="off"> Member
+    </label>
+
+  </div>
+
+  <div id="subjectsearch">
+    <label for="subjectlisting">Subject or Area</label>
+     <select id="subjectlisting">
+    </select>
+    <div id="subjectresults">
+    </div>
+  </div>
+
+  <div id="membersearch">
+    <label for="memberlisting">Choose a Member</label>
   <select id="memberlisting">
      </select>
+     <div id="memberresults">
 
+  </div>
 
+</div>
+
+</div>
    <script>
+   var billType = "HR";
+   var congress = 113;
+   var classification = "policyareas";
+
+   var members;
+   var filenameStem = "https://esperr.github.io/congressviz/data/"
 
    getMembers();
+   getSubjects();
+   google.charts.load('current', {packages: ['corechart', 'bar']});
+
+   //start by showing only subject search
+   $( "#membersearch" ).toggle();
+
+
    function getMembers() {
-     var auxArr = [];
-     $.each(members, function(key, value)
-       {
-         if (members[key]['district']) {
-           memberOption = "<option value='" + key + "'>" + members[key]['fullname'] + "</option>";
-           auxArr.push(memberOption);
-         }
-       });
-     $('#memberlisting').append(auxArr.join(''));
-
-   }
-   console.log(members);
-
-   var subjects = [];
-   //console.log(allpolicies);
-   for (subject in allsubjects) {
-     subjects.push(subject);
-     subjects.sort();
-   }
-   var auxArr = [];
-   $.each(subjects, function(i, subject)
-     {
-       auxArr[i] = "<option value='" + subject + "'>" + subject + "</option>";
+     filename = filenameStem + "members_" + congress + "_" + billType + ".js";
+     $.getJSON( filename, function( data ) {
+       members = data;
+       var sortedMembers = membersort(members);
+       var auxArr = [];
+       $.each(sortedMembers, function(i, member)
+         {
+           if (member['district']) {
+             auxArr[i] = "<option value='" + member['bioid'] + "'>" + member['fullname'] + "</option>";
+           }
+         });
+        $('#memberlisting').append(auxArr.join(''));
+     })
+     .fail(function() {
+       alert( "There was some sort of problem -- please reload the page" );
      });
-   $('#subjectlisting').append(auxArr.join(''));
+   }
+
+   //console.log(members);
+
+   function getSubjects() {
+     filename = filenameStem + "policyareasbymember_" + congress + "_" + billType + ".js";
+     $.getJSON( filename, function( data ) {
+       allsubjects = data;
+       var subjects = [];
+       for (subject in allsubjects) {
+         subjects.push(subject);
+         subjects.sort();
+       }
+       var auxArr = [];
+       $.each(subjects, function(i, subject)
+         { var nounder = subject.replace(/_/g, ' ');
+           auxArr[i] = "<option value='" + subject + "'>" + nounder + "</option>";
+         });
+       $('#subjectlisting').append(auxArr.join(''));
+     })
+     .fail(function() {
+       alert( "There was some sort of problem -- please reload the page" );
+     });
+  }
+
 
    $( "#subjectlisting" ).change(function() {
      subject = $( "#subjectlisting option:selected" ).val();
@@ -58,22 +131,43 @@
      topsubjects(member);
    });
 
+   $('#togglesearch input').on('change', function() {
+     $( "#membersearch" ).toggle();
+     $( "#subjectsearch" ).toggle();
+   });
+
    function memberrank(subject) {
      var ranklist = [];
+     var memberlink ="https://www.congress.gov/search?q={%22source%22%3A%22members%22%2C%22search%22%3A%22";
      $.each( allsubjects[subject], function( key, value ) {
-       //var member = key;
        var sponsored = value['sponsored'] || 0;
        var cosponsored = value['cosponsored'] || 0;
        var score = (sponsored*3) + cosponsored;
-       var memberobj = { "member": key, "score": score };
-       ranklist.push(memberobj);
+       var memberobj = { "member": key, "score": score, "sponsored": sponsored, "cosponsored": cosponsored };
+       if (memberobj.score > 0) {
+         ranklist.push(memberobj);
+       }
        });
+       console.log(members.length);
        var ranked = keysrt(ranklist, 'score', 'reverse');
-       console.log(JSON.stringify(ranked));
+       console.log(ranked.length);
+       $( "#subjectresults" ).empty();
+       for (i=0; i<ranked.length; i++) {
+         var result = members.filter(function( member ) {
+           return member.bioid == ranked[i].member;
+         });
+         var mymember = (result[0]);
+         if (mymember) {
+           var mydiv = "<div class='member'><span class='name'><a href='" + memberlink + ranked[i].member + "%22}'>" + mymember.fullname + "</a></span>";
+           mydiv = mydiv + "<br /><span class='counts'>Sponsored: " + ranked[i].sponsored + " Cosponsored: " + ranked[i].cosponsored + "</span></div>"
+           $( "#subjectresults" ).append( mydiv );
+         }
+       }
    }
 
    function topsubjects(member) {
      var interests = [];
+     $( "#memberresults" ).empty();
      $.each( allsubjects, function( key, value ) {
        var scanSubject = allsubjects[key];
        if (scanSubject[member]) {
@@ -86,8 +180,54 @@
        }
      });
      var ranked = keysrt(interests, 'proportion', 'reverse');
-     console.log(ranked);
+     var proparray = [];
+     var labels = ['Subject', 'Proportion',]
+     proparray.push(labels);
+     for (i=0; i<ranked.length; i++){
+       var nounder = ranked[i].subject.replace(/_/g, ' ');
+       proparray.push([nounder, ranked[i].proportion]);
+     }
+     console.log(proparray);
+     drawchart(proparray);
    }
+
+   function drawchart(proparray) {
+     $( "#memberresults" ).append("<div id='chart_div' style='width: 900px; height: 500px;'></div>")
+         var data = google.visualization.arrayToDataTable(proparray);
+
+    var options = {
+      chart: {
+                  title: 'Bills by Subject',
+                  subtitle: 'Sponsored and cosponsored as proportion of all Bills',
+                },
+      chartArea: {width: '50%'},
+      hAxis: {
+        title: 'Proportion',
+        minValue: 0
+      },
+      vAxis: {
+        title: 'Subject'
+      },
+      bars: 'horizontal' // Required for Material Bar Charts.
+
+    };
+
+    var chart = new google.charts.Bar(document.getElementById('chart_div'));
+    chart.draw(data, google.charts.Bar.convertOptions(options));
+    }
+
+
+   function membersort(sortMembers) {
+     var sorted = keysrt(sortMembers, "lastname");
+     return sorted;
+   }
+
+   function membermatch(bioid) {
+     for (i=0; i<members.length; i++) {
+       if (members[i].bioid == bioid) return members[i];
+     }
+   }
+
    function keysrt(arr, key, reverse) {
        var sortOrder = 1;
        if(reverse){
