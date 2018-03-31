@@ -29,51 +29,48 @@ var printsize = "small";
 var currentLocation = location.hostname + location.pathname;
 var type = "bills";
 
-getbaseline();
-
 //Do we have a search or datespan specified in the querystring?
+var queryDict = {};
+location.search.substr(1).split("&").forEach(function(item) {
+    queryDict[item.split("=")[0]] = item.split("=")[1]
+})
+if(queryDict["type"]) {
+  type = queryDict["type"];
+}
 
-
+getbaseline();
 
   function getbaseline() {
     //Fetch our baseline counts from the webservice
     $.get( urlstem + "baseline?type=" + type, function( data ) {
       //build out our data structure
       var allCounts = data.navigators[1].buckets;
+      console.log(allCounts);
       for (i=0; i<allCounts.length; i++) {
         allyears.push(allCounts[i].value);
         searches.counts[allCounts[i].value] = { "total": allCounts[i].count } ;
       }
       allyears.sort();
+      console.log(allyears);
       startYear = allyears[0];
       endYear = allyears[allyears.length-1];
+      //there's something hinky about the indexing for CRECB after 1998
+      if (type == "CRECB") {
+        endYear = 1998;
+      }
       pickYears();
-
     })
     .fail(function() {
       alert( "There was some sort of problem -- please reload the page" );
     })
     .done(function() {
-      alert( "Done!" );
       if (location.search) {
-        var queryDict = {};
-        location.search.substr(1).split("&").forEach(function(item) {
-            queryDict[item.split("=")[0]] = item.split("=")[1]
-        })
         querySearch(queryDict);
       }
     });
   }
-//var search = [];
-
-
-//manually get baseline counts
-//term = "all[sb]";
-//dosearch(term);
-//alert("done!");
 
 function querySearch(queryDict) {
-  type = queryDict["type"];
   $('#type option[value="' + type + '"]').prop('selected', true);
   //getbaseline();
   if (queryDict["startyear"]) { startYear = queryDict["startyear"]; }
@@ -123,6 +120,7 @@ function showWait() {
     }
 
   function pickYears() {
+    console.log(endYear);
     $("#pickyears").empty();
     $("#pickyears").append('Start: <select name="startyear">');
     $("#pickyears").append('&nbsp;&nbsp;End: <select name="endyear">');
