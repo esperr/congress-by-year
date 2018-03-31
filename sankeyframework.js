@@ -49,8 +49,8 @@
       subjectList.sort();
       var auxArr = [];
       $.each(subjectList, function(i, subject)
-        {
-          auxArr[i] = "<option value='" + subject + "'>" + subject + "</option>";
+        { var nounder = subject.replace(/_/g, ' ');
+          auxArr[i] = "<option value='" + subject + "'>" + nounder + "</option>";
         });
         $('#subjectlisting').append(auxArr.join(''));
         if (classification == "subjects") {
