@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+ <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="congressbyyear.css" rel="stylesheet" type="text/css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+<title>About Congressional by Year</title>
+</head>
+
+<body>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
+<div class="container">
+<div id="topbanner" class="jumbotron">
+	<h1>About Congress by Year</h1>
+	<a id="about" class="label label-default" href="index.html">Home</a>
+</div>
+   <div class="row">
+
+<div class="col-sm-7 col-md-7 col-lg-7 aboutleft">
+	<div class="panel panel-default">
+	<div class="panel-body">
+		<h2>Why Congress by Year?</h2>
+    <p>To understand current trends in politics and public policy, it is helpful to examine the concerns of congress in the past, and to study
+    how they have changed over time. Using Congress by Year, it is possible to see proportional trends for bills, laws and Congressional Record citations.</p>
+    <p>It is also possible to visually <em>compare</em> one search against another.</p>
+    <h2>How it works</h2>
+    <p>Results for each year in a search are extracted from the govinfo database and compared with that year's total. The resulting proportion is then plotted
+      on an interactive graph. Proportions are used instead of raw numbers in order to give a more accurate appraisal of trends.</p>
+    <h2>Caveats</h2>
+      <p>Indexing for years may vary in quality (particularly for earlier years of the bound Congressional Record)<p>
+	</div>
+	</div>
+</div>
+
+<div class="col-sm-5 col-md-5 col-lg-5">
+ <div class="panel panel-default">
+<div class="panel-body">
+<h3>Contact</h3>
+<p>Congress by Year is an experimental project of Ed Sperr, M.L.I.S.</p>
+<p>Ed can be reached at <a href="mailto:ed_sperr@hotmail.com">ed_sperr@hotmail.com</a> or <a href="mailto:esperr@uga.edu">esperr@uga.edu</a>.</p>
+      </div>
+   </div>
+
+	<div class="panel panel-default">
+	<div class="panel-body">
+  	<h3>Technologies</h3>
+		<p>Congress by Year powered by <a href="http://jquery.com/">jQuery</a>. Govinfo does not a public API as yet, so a <a href="">custom webservice</a>
+      is used to fetch the JSON that provides the yearly counts. <a href="https://developers.google.com/chart/interactive/docs/gallery/linechart">Google Charts</a> is used to draw the charts and responsive layout is made easier with <a href="http://getbootstrap.com/">Bootstrap</a>.</p>
+    <p>You can find the source code for this application at <a href="https://github.com/esperr/congress-by-year">GitHub</a>.</p>
+
+    <h3>License</h3>
+		<p>Please note that the information provided here comes ultimately from the <a href="https://www.gpo.gov/">Government Printing Office</a>.</p>
+    <p>The code underlying this application is Public Domain, but if you use Congress by Year for publication, I'd appreciate a citation:
+      <blockquote>
+        Sperr E. Congress by Year [Internet]. 2018 [cited <em>your_date_here</em>]. Available from http://esperr.github.io/congress-by-year/
+      </blockquote>
+    </p>
+
+  </div>
+	</div>
+
+
+
+  <div class="panel panel-default">
+  <div class="panel-body">
+    <h2>See also...</h2>
+    <p>Want to have even more fun with visualization of congressional data? Check out <a href="https://esperr.github.io/committee-flow/">
+      Committee Flow</a> and <a href="https://esperr.github.io/members-by-interest/">Members by Interest</a></p>
+  </div>
+  </div>
+
+      </div>
+
+</div>
+</div>
+<script>
+(function() {
+var currentwidth = $(".aboutleft").innerWidth() * .9;
+console.log(currentwidth);
+$("img").width(currentwidth);
+})
+
+();
+</script>
+
+</body>
