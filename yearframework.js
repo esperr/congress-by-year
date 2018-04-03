@@ -308,8 +308,11 @@ function drawMainChart() {
     var thisSearchindex = selectedItem['column'];
     var myterm = searches.searchterms[thisSearchindex-1];
     var resultsURL = 'https://www.govinfo.gov/app/search/';
-    var querybits = '{"offset":0,"query":"collection:(' + type + ') AND publishdate:' + year + ' AND content:(' + myterm + ')","historical":true}';
-    resultsURL = resultsURL + querybits;
+    var queryenv = { offset: 0, historical: true };
+    var myquery = 'collection:(' + type + ') AND publishdate:' + year + ' AND content:(' + myterm + ')';
+    queryenv.query = myquery;
+    var safebits = encodeURI(JSON.stringify(queryenv));
+    resultsURL = resultsURL + safebits;
     window.open(resultsURL,'_blank');
    }
   }
