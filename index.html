@@ -14,6 +14,15 @@
   </style>
   <script>
     //Google analytics script goes here!
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+      <script async src="https://www.googletagmanager.com/gtag/js?id=UA-433406-11"></script>
+      <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'UA-433406-11');
+      </script>
+
   </script>
 </head>
 
@@ -93,8 +102,8 @@ if (msie > 0) {
 
     <p>Congress by Year shows your search proportionally, comparing the results for each year to the database as whole.</p>
     <p>Enter any <a href="https://www.govinfo.gov/">govinfo</a> search above to see how your results change over time for bills, laws or citations in the Congressional Record.
-    You can use one word (e.g. <a class="example" data-srchstr="q1=wheat">wheat</a>, <a class="example" data-srchstr="q1=Russia">Russia</a>) or
-    several (<a class="example" data-srchstr="q1=public transportation">public transportation</a>, <a class="example" data-srchstr="q1=health insurance">health insurance</a>).</p>
+    You can use one word (e.g. <a class="example" data-srchstr="q1=wheat">wheat</a>), several (<a class="example" data-srchstr="q1=public transportation">public transportation</a>),
+    or a quoted phrase (<a class="example" data-srchstr="q1=%22affordable care act%22">"affordable care act"</a>).</p>
 
     <p>Importantly, by entering multiple searches one at a time, you can easily <a class="example" data-srchstr="q1=army&q2=navy&q3=air force">compare</a> them over time.
     Once you're finished, you can easily share your results with others or save your graphs for later.
