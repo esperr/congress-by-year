@@ -163,5 +163,7 @@ body {
 }
 
 .splash {
-  max-width: 55em;
+  padding:2em;
+  max-width: 40em;
+  font-size:1.2em;
 }
