@@ -31,9 +31,12 @@ var type = "bills";
 
 //Do we have a search or datespan specified in the querystring?
 var queryDict = {};
-location.search.substr(1).split("&").forEach(function(item) {
+var urlquerystr = location.search.substr(1);
+urlquerystr = decodeURIComponent(urlquerystr);
+urlquerystr.split("&").forEach(function(item) {
     queryDict[item.split("=")[0]] = item.split("=")[1]
-})
+});
+
 if(queryDict["type"]) {
   type = queryDict["type"];
 }
@@ -45,13 +48,11 @@ getbaseline();
     $.get( urlstem + "baseline?type=" + type, function( data ) {
       //build out our data structure
       var allCounts = data.navigators[1].buckets;
-      console.log(allCounts);
       for (i=0; i<allCounts.length; i++) {
         allyears.push(allCounts[i].value);
         searches.counts[allCounts[i].value] = { "total": allCounts[i].count } ;
       }
       allyears.sort();
-      console.log(allyears);
       startYear = allyears[0];
       endYear = allyears[allyears.length-1];
       //there's something hinky about the indexing for CRECB after 1998
@@ -120,7 +121,6 @@ function showWait() {
     }
 
   function pickYears() {
-    console.log(endYear);
     $("#pickyears").empty();
     $("#pickyears").append('Start: <select name="startyear">');
     $("#pickyears").append('&nbsp;&nbsp;End: <select name="endyear">');
@@ -213,7 +213,6 @@ function dosearch(term) {
       //'alert("Nothing found for this search or too few results to chart by year. Please try again");
       $('#noJoy').on('closed.bs.alert', function () {
         if (searches.searchterms.length > 0) {
-          console.log(JSON.stringify(searches))
             drawMainChart();
         } else {
           return;
@@ -398,10 +397,15 @@ function drawMainChart() {
 //      });
 
 function makeQuerystring() {
+  var myQuerystring = "";
+  var shareUrl = "";
   for (i=0; i<searches.searchterms.length; i++) {
-    if (myQuerystring.length > 0) { myQuerystring = myQuerystring + "&"; }
+    //if (myQuerystring.length > 0) { myQuerystring = myQuerystring + "&"; }
     var qindex = i+1;
     var querypart = 'q' + qindex.toString() + '=' + searches.searchterms[i];
+    if (qindex > 1) {
+      querypart = "&" + querypart;
+    }
     myQuerystring = myQuerystring + querypart;
   }
   if (startYear != allyears[0]) {
@@ -411,7 +415,7 @@ function makeQuerystring() {
     myQuerystring = myQuerystring + "&endyear=" + endYear;
   }
   myQuerystring = myQuerystring + "&type=" + type;
-  var shareUrl = currentLocation + "?" +  myQuerystring;
+  var shareUrl = currentLocation + "?" + encodeURIComponent(myQuerystring);
   $( "#sharingUrlcontent" ).attr( "style", "width: 35em;" );
   $( "#sharingUrlcontent" ).attr( "value", shareUrl );
 }
